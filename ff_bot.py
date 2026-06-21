@@ -14,6 +14,9 @@ CH1_LINK = os.getenv("CH1_LINK")
 CH2_ID = os.getenv("CH2_ID")
 CH2_LINK = os.getenv("CH2_LINK")
 
+INFO_API = os.getenv("INFO_API")
+IMAGE_API = os.getenv("IMAGE_API")
+
 def ts_to_ist(ts):
     if not ts:
         return "Not Found"
