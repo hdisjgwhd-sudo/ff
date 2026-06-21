@@ -8,10 +8,11 @@ IST = timezone(timedelta(hours=5, minutes=30))
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-CH1_ID = "@ruchika_ownss"
-CH1_LINK = "https://t.me/ruchika_ownss"
-CH2_ID = "@richatalks77"
-CH2_LINK = "https://t.me/richatalks77"
+CH1_ID = os.getenv("CH1_ID")
+CH1_LINK = os.getenv("CH1_LINK")
+
+CH2_ID = os.getenv("CH2_ID")
+CH2_LINK = os.getenv("CH2_LINK")
 
 def ts_to_ist(ts):
     if not ts:
@@ -196,9 +197,9 @@ def safe_get_url(url):
 
 def fetch_player_isbanner_data_by_uid_or_name(search_parameter):
     if search_parameter.isdigit():
-        url = f"https://info.killersharmabot.online/bancheck?uid={search_parameter}"
+        url = f"{INFO_API}/bancheck?uid={search_parameter}"
     else:
-        url = f"https://info.killersharmabot.online/bancheck?name={search_parameter}"
+        url = f"{INFO_API}/bancheck?name={search_parameter}"
     response = requests.get(url)
     if response.status_code != 200:
         return None
@@ -207,9 +208,9 @@ def fetch_player_isbanner_data_by_uid_or_name(search_parameter):
 
 def fetch_player_wishlist_data_by_uid_or_name(search_parameter):
     if search_parameter.isdigit():
-        url = f"https://info.killersharmabot.online/wishlist?uid={search_parameter}"
+        url = f"{INFO_API}/wishlist?uid={search_parameter}"
     else:
-        url = f"https://info.killersharmabot.online/wishlist?name={search_parameter}"
+        url = f"{INFO_API}/wishlist?name={search_parameter}"
     response = requests.get(url)
     if response.status_code != 200:
         return None
@@ -221,9 +222,9 @@ def fetch_player_wishlist_data_by_uid_or_name(search_parameter):
 
 def fetch_player_data_by_uid_or_name(search_parameter):
     if search_parameter.isdigit():
-        url = f"https://info.killersharmabot.online/player-info?uid={search_parameter}"
+        url = f"{INFO_API}/player-info?uid={search_parameter}"
     else:
-        url = f"https://info.killersharmabot.online/player-info?name={search_parameter}"
+        url = f"{INFO_API}/player-info?name={search_parameter}"
     response = requests.get(url)
     if response.status_code != 200:
         return None
@@ -240,7 +241,7 @@ def fetch_leader_data_by_uid_or_name(search_parameter):
     if not captain_information.get("accountId"):
         return None
     leader_uid = captain_information.get("accountId")
-    url = f"https://info.killersharmabot.online/player-info?uid={leader_uid}"
+    url = f"{INFO_API}/player-info?uid={leader_uid}"
     response = requests.get(url)
     if response.status_code != 200:
         return None
@@ -253,7 +254,7 @@ def fetch_banner_image(player_data):
     clan_information = player_data.get("clanBasicInfo", {})
     frame = "true" if basic_information.get("primeLevel", {}).get("level") == 8 else "false"
     url = (
-        f"https://image.killersharmabot.online/banner-image"
+        f"{IMAGE_API}/banner-image"
         f"?headPic={basic_information.get('headPic','')}"
         f"&bannerId={basic_information.get('bannerId','')}"
         f"&name={basic_information.get('nickname','').replace('#','%23').replace('&','%26')}"
@@ -273,7 +274,7 @@ def fetch_outfit_image(player_data):
     equipped_outfits = profile_information.get("clothes", [])
     character_id = profile_information.get("avatarId", "102000007")
     outfit_ids = ",".join(str(item) for item in (equipped_outfits + equipped_weapons)) if (equipped_outfits or equipped_weapons) else ""
-    url = f"https://image.killersharmabot.online/outfit-image?avatar_id={character_id}&clothes={outfit_ids}"
+    url = f"{IMAGE_API}/outfit-image?avatar_id={character_id}&clothes={outfit_ids}"
     return safe_get_url(url).content
 
 # ── Command handlers ─────────────────────────────────────────────────────────
