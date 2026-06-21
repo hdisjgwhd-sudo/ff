@@ -1,11 +1,12 @@
 import requests
+import os
 from datetime import datetime, timezone, timedelta
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
-BOT_TOKEN = "8664473722:AAHpdyJslHabEXFPlo03xHK8mlzE8uRoMdc"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 CH1_ID = "@ruchika_ownss"
 CH1_LINK = "https://t.me/ruchika_ownss"
