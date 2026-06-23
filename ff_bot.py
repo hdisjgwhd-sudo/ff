@@ -17,6 +17,12 @@ CH2_LINK = os.getenv("CH2_LINK")
 CH3_ID = os.getenv("CH3_ID")
 CH3_LINK = os.getenv("CH3_LINK")
 
+CH4_ID = os.getenv("CH4_ID")
+CH4_LINK = os.getenv("CH4_LINK")
+
+CH5_ID = os.getenv("CH5_ID")
+CH5_LINK = os.getenv("CH5_LINK")
+
 INFO_API = os.getenv("INFO_API")
 IMAGE_API = os.getenv("IMAGE_API")
 
@@ -311,7 +317,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• `/bancheck <uid/name>` — Ban status check\n",
         "• `/isban <uid/name>` — Ban status check (tree view)\n",
         "• `/wishlist <uid/name>` — Wishlist items check\n",
-        "• `/guildleader <uid/name>` — Guild leader info",
+        "• `/guildleader <uid/name>` — Guild leader info\n",
         "• `/invite5 <uid>` — 5-Lobby invite bhejo\n",
         parse_mode="Markdown"
     )
