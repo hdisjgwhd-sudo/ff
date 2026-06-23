@@ -690,17 +690,28 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    async def post_init(application):
+        await application.bot.delete_webhook(drop_pending_updates=True)
+
+    app = (
+        ApplicationBuilder()
+        .token(BOT_TOKEN)
+        .post_init(post_init)
+        .build()
+    )
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(verify_join_callback, pattern="^verify_join$"))
     app.add_handler(CommandHandler("info", info))
     app.add_handler(CommandHandler("level", level))
     app.add_handler(CommandHandler("bancheck", bancheck))
     app.add_handler(CommandHandler("isban", isban))
     app.add_handler(CommandHandler("wishlist", wishlist))
     app.add_handler(CommandHandler("guildleader", guildleader))
-    app.add_handler(CallbackQueryHandler(verify_join_callback, pattern="^verify_join$"))
-    print("Bot started...")
-    app.run_polling()
+        print("Bot started...")
+    app.run_polling(
+        allowed_updates=Update.ALL_TYPES,
+        drop_pending_updates=True,
+    )
 
 if __name__ == "__main__":
     main()
