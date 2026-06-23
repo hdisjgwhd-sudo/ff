@@ -707,7 +707,7 @@ def main():
     app.add_handler(CommandHandler("isban", isban))
     app.add_handler(CommandHandler("wishlist", wishlist))
     app.add_handler(CommandHandler("guildleader", guildleader))
-        print("Bot started...")
+    print("Bot started...")
     app.run_polling(
         allowed_updates=Update.ALL_TYPES,
         drop_pending_updates=True,
