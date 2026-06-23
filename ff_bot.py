@@ -100,7 +100,11 @@ async def is_user_joined(bot, user_id):
         ch2 = mem2.status not in ['left', 'kicked']
         mem3 = await bot.get_chat_member(CH3_ID, user_id)
         ch3 = mem3.status not in ['left', 'kicked']
-        return ch1 and ch2 and ch3
+        mem4 = await bot.get_chat_member(CH4_ID, user_id)
+        ch4 = mem4.status not in ['left', 'kicked']
+        mem5 = await bot.get_chat_member(CH5_ID, user_id)
+        ch5 = mem5.status not in ['left', 'kicked']
+        return ch1 and ch2 and ch3 and ch4 and ch5
     except Exception as e:
         print(f"Join check error: {e}")
         return True
@@ -115,6 +119,8 @@ def get_join_message(user_name):
             InlineKeyboardButton("📢 Join Channel 1", url="https://t.me/ruchika_ownss"),
             InlineKeyboardButton("📢 Join Channel 2", url="https://t.me/v4nshera"),
             InlineKeyboardButton("📢 Join Channel 3", url="https://t.me/backupvnsh"),
+            InlineKeyboardButton("📢 Join Channel 3", url="https://t.me/ruchikaa_owns"),
+            InlineKeyboardButton("📢 Join Channel 3", url="https://t.me/ruchii_owns"),
         ],
         [InlineKeyboardButton("♻️ Try Again", callback_data="verify_join")],
     ])
@@ -306,6 +312,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• `/isban <uid/name>` — Ban status check (tree view)\n"
         "• `/wishlist <uid/name>` — Wishlist items check\n"
         "• `/guildleader <uid/name>` — Guild leader info",
+        "• `/invite5 <uid>` — 5-Lobby invite bhejo\n"
         parse_mode="Markdown"
     )
 
@@ -693,6 +700,40 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for chunk in chunks[1:]:
             await update.message.reply_text(chunk, parse_mode="Markdown")
 
+async def invite5(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("❌ Usage: `/invite5 <uid>`", parse_mode="Markdown")
+        return
+
+    uid = context.args[0].strip()
+    if not uid.isdigit():
+        await update.message.reply_text("❌ UID sirf numbers mein hona chahiye.", parse_mode="Markdown")
+        return
+
+    msg = await update.message.reply_text("📨 5-Lobby invite bhej raha hoon...")
+
+    try:
+        url = f"https://emoteapi-5lobbyapi.stargmr.pro/api/public/5?uid={uid}"
+        response = requests.get(url, timeout=10)
+        data = response.json()
+
+        if data.get("status") == "success":
+            total_bots = data.get("total_bots", "?")
+            message = data.get("message", "Invite sent!")
+            text = (
+                f"✅ *5-Lobby Invite Sent!*\n\n"
+                f"🆔 UID: `{uid}`\n"
+                f"🤖 Bots Used: `{total_bots}`\n"
+                f"📨 Message: `{message}`"
+            )
+        else:
+            text = f"❌ Invite fail hua.\n\nResponse: `{data}`"
+
+        await msg.edit_text(text, parse_mode="Markdown")
+
+    except Exception as e:
+        await msg.edit_text(f"❌ Error aaya: `{e}`", parse_mode="Markdown")
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -713,6 +754,7 @@ def main():
     app.add_handler(CommandHandler("isban", isban))
     app.add_handler(CommandHandler("wishlist", wishlist))
     app.add_handler(CommandHandler("guildleader", guildleader))
+    app.add_handler(CommandHandler("invite5", invite5))
     print("Bot started...")
     app.run_polling(
         allowed_updates=Update.ALL_TYPES,
