@@ -319,6 +319,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• `/wishlist <uid/name>` — Wishlist items check\n"
         "• `/guildleader <uid/name>` — Guild leader info\n"
         "• `/invite5 <uid>` — 5-Lobby invite bhejo\n"
+        "• `/joinemote <tc> <6 uids> <emote_id>` — Lobby join + emote\n"
+        "• `/emotelist` — Emote IDs dekho\n"
     )
     await update.message.reply_text(text, parse_mode="Markdown")
 
@@ -740,6 +742,81 @@ async def invite5(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await msg.edit_text(f"❌ Error aaya: `{e}`", parse_mode="Markdown")
 
+@require_join
+async def joinemote(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) < 8:
+        await update.message.reply_text(
+            "❌ Usage: `/joinemote <tc> <uid1> <uid2> <uid3> <uid4> <uid5> <uid6> <emote_id>`\n\n"
+            "Example: `/joinemote 1234567 111 222 333 444 555 666 9000001`",
+            parse_mode="Markdown"
+        )
+        return
+
+    tc = context.args[0].strip()
+    uid1 = context.args[1].strip()
+    uid2 = context.args[2].strip()
+    uid3 = context.args[3].strip()
+    uid4 = context.args[4].strip()
+    uid5 = context.args[5].strip()
+    uid6 = context.args[6].strip()
+    emote_id = context.args[7].strip()
+
+    # Validate sab UIDs numbers hain
+    for uid in [uid1, uid2, uid3, uid4, uid5, uid6]:
+        if not uid.isdigit():
+            await update.message.reply_text("❌ Saare UIDs sirf numbers mein hone chahiye.")
+            return
+
+    msg = await update.message.reply_text("🎭 Join + Emote bhej raha hoon...")
+
+    try:
+        url = (
+            f"https://emoteapi-5lobbyapi.stargmr.pro/api/public/join"
+            f"?tc={tc}&uid1={uid1}&uid2={uid2}&uid3={uid3}"
+            f"&uid4={uid4}&uid5={uid5}&uid6={uid6}&emote_id={emote_id}"
+        )
+        response = requests.get(url, timeout=10)
+        data = response.json()
+
+        if data.get("status") == "success":
+            text = (
+                f"✅ *Join + Emote Success!*\n\n"
+                f"🏷️ Team Code: `{tc}`\n"
+                f"🎭 Emote ID: `{emote_id}`\n"
+                f"🤖 Bots Used: `{data.get('total_bots', '?')}`\n"
+                f"📁 File: `{data.get('file_used', '?')}`\n"
+                f"📨 Message: `{data.get('message', '?')}`"
+            )
+        else:
+            text = f"❌ Failed!\n\nResponse: `{data}`"
+
+        await msg.edit_text(text, parse_mode="Markdown")
+
+    except Exception as e:
+        await msg.edit_text(f"❌ Error: `{e}`", parse_mode="Markdown")
+
+
+async def emotelist(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🎭 *Free Fire Emote IDs*\n\n"
+        "`9000001` — Dab\n"
+        "`9000002` — Arrival\n"
+        "`9000003` — Bhangra\n"
+        "`9000004` — Hip Hop\n"
+        "`9000005` — Kiss\n"
+        "`9000006` — Shake It\n"
+        "`9000007` — Salute\n"
+        "`9000008` — Taunt\n"
+        "`9000009` — Robot Dance\n"
+        "`9000010` — Funny\n"
+        "`9000011` — Victory\n"
+        "`9000012` — Wave\n"
+        "`9000013` — Floss\n"
+        "`9000014` — Squat Dance\n"
+        "`9000015` — Headbang\n"
+    )
+    await update.message.reply_text(text, parse_mode="Markdown")
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -761,6 +838,8 @@ def main():
     app.add_handler(CommandHandler("wishlist", wishlist))
     app.add_handler(CommandHandler("guildleader", guildleader))
     app.add_handler(CommandHandler("invite5", invite5))
+    app.add_handler(CommandHandler("joinemote", joinemote))
+    app.add_handler(CommandHandler("emotelist", emotelist))
     print("Bot started...")
     app.run_polling(
         allowed_updates=Update.ALL_TYPES,
