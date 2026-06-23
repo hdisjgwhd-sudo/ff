@@ -309,18 +309,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, reply_markup=markup)
         return
 
-    await update.message.reply_text(
+    text = (
         "🎮 *Free Fire Bot*\n\n"
         "Commands:\n"
-        "• `/info <uid/name>` — Full player info\n",
-        "• `/level <uid/name>` — Level & EXP details\n",
-        "• `/bancheck <uid/name>` — Ban status check\n",
-        "• `/isban <uid/name>` — Ban status check (tree view)\n",
-        "• `/wishlist <uid/name>` — Wishlist items check\n",
-        "• `/guildleader <uid/name>` — Guild leader info\n",
-        "• `/invite5 <uid>` — 5-Lobby invite bhejo\n",
-        parse_mode="Markdown"
+        "• `/info <uid/name>` — Full player info\n"
+        "• `/level <uid/name>` — Level & EXP details\n"
+        "• `/bancheck <uid/name>` — Ban status check\n"
+        "• `/isban <uid/name>` — Ban status check (tree view)\n"
+        "• `/wishlist <uid/name>` — Wishlist items check\n"
+        "• `/guildleader <uid/name>` — Guild leader info\n"
+        "• `/invite5 <uid>` — 5-Lobby invite bhejo\n"
     )
+    await update.message.reply_text(text, parse_mode="Markdown")
 
 @require_join
 async def level(update: Update, context: ContextTypes.DEFAULT_TYPE):
