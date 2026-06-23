@@ -108,7 +108,7 @@ def get_join_message(user_name):
     markup = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("📢 Join Channel 1", url="https://t.me/ruchika_ownss"),
-            InlineKeyboardButton("📢 Join Channel 2", url="https://t.me/richatalks77"),
+            InlineKeyboardButton("📢 Join Channel 2", url="https://t.me/v4nshera"),
         ],
         [InlineKeyboardButton("♻️ Try Again", callback_data="verify_join")],
     ])
