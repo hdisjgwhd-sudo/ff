@@ -433,8 +433,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "🎮 *Free Fire Bot*\n\n"
         "Commands:\n"
-        "• `/info <uid/name>` — Full player info\n"
-        "• `/like <uid> <server>` — Player ko like bhejo\n"
+        "• `/info <uid/name>` — Full player info\n"        
         "• `/level <uid/name>` — Level & EXP details\n"
         "• `/bancheck <uid/name>` — Ban status check\n"
         "• `/isban <uid/name>` — Ban status check (tree view)\n"
@@ -443,7 +442,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• `/invite5 <uid>` — 5-Lobby invite bhejo\n"
         "• `/joinemote <tc> <6 uids> <emote_id>` — Lobby join + emote\n"
         "• `/emotelist` — Emote IDs dekho\n"
-        
+        "• `/like <uid> <server>` — Player ko like bhejo\n"        
     )
     await update.message.reply_text(text, parse_mode="Markdown")
 
