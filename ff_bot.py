@@ -136,8 +136,8 @@ def get_join_message(user_name):
             InlineKeyboardButton("📢 Join Channel 1", url="https://t.me/ruchika_ownss"),
             InlineKeyboardButton("📢 Join Channel 2", url="https://t.me/v4nshera"),
             InlineKeyboardButton("📢 Join Channel 3", url="https://t.me/backupvnsh"),
-            InlineKeyboardButton("📢 Join Channel 3", url="https://t.me/ruchikaa_owns"),
-            InlineKeyboardButton("📢 Join Channel 3", url="https://t.me/ruchii_owns"),
+            InlineKeyboardButton("📢 Join Channel 4", url="https://t.me/ruchikaa_owns"),
+            InlineKeyboardButton("📢 Join Channel 5", url="https://t.me/ruchii_owns"),
         ],
         [InlineKeyboardButton("♻️ Try Again", callback_data="verify_join")],
     ])
@@ -434,6 +434,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎮 *Free Fire Bot*\n\n"
         "Commands:\n"
         "• `/info <uid/name>` — Full player info\n"
+        "• `/like <uid> <server>` — Player ko like bhejo\n"
         "• `/level <uid/name>` — Level & EXP details\n"
         "• `/bancheck <uid/name>` — Ban status check\n"
         "• `/isban <uid/name>` — Ban status check (tree view)\n"
@@ -442,6 +443,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• `/invite5 <uid>` — 5-Lobby invite bhejo\n"
         "• `/joinemote <tc> <6 uids> <emote_id>` — Lobby join + emote\n"
         "• `/emotelist` — Emote IDs dekho\n"
+        
     )
     await update.message.reply_text(text, parse_mode="Markdown")
 
