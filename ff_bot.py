@@ -3,6 +3,17 @@ import os
 from datetime import datetime, timezone, timedelta
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
+import asyncio
+import aiohttp
+import binascii
+import json
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+from google.protobuf.json_format import MessageToJson
+from google.protobuf.message import DecodeError
+import like_pb2
+import like_count_pb2
+import uid_generator_pb2
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -214,6 +225,116 @@ def safe_get_url(url):
     response.raise_for_status()
     return response
 
+# ── Like Feature ─────────────────────────────────────────────────────────────
+
+def like_load_tokens(server_name):
+    try:
+        if server_name == "IND":
+            with open("token_ind.json", "r") as f:
+                return json.load(f)
+        elif server_name in {"BR", "US", "SAC", "NA"}:
+            with open("token_br.json", "r") as f:
+                return json.load(f)
+        else:
+            with open("token_bd.json", "r") as f:
+                return json.load(f)
+    except Exception as e:
+        print(f"Token load error: {e}")
+        return None
+
+def like_encrypt(plaintext):
+    key = b'Yg&tc%DEuh6%Zc^8'
+    iv  = b'6oyZDr22E3ychjM%'
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    encrypted = cipher.encrypt(pad(plaintext, AES.block_size))
+    return binascii.hexlify(encrypted).decode('utf-8')
+
+def like_create_proto(uid, region):
+    msg = like_pb2.like()
+    msg.uid = int(uid)
+    msg.region = region
+    return msg.SerializeToString()
+
+def uid_enc(uid):
+    msg = uid_generator_pb2.uid_generator()
+    msg.saturn_ = int(uid)
+    msg.garena = 1
+    return like_encrypt(msg.SerializeToString())
+
+def like_decode_proto(binary):
+    try:
+        info = like_count_pb2.Info()
+        info.ParseFromString(binary)
+        return info
+    except Exception as e:
+        print(f"Decode error: {e}")
+        return None
+
+def like_get_url(server_name, endpoint):
+    if server_name == "IND":
+        base = "https://client.ind.freefiremobile.com"
+    elif server_name in {"BR", "US", "SAC", "NA"}:
+        base = "https://client.us.freefiremobile.com"
+    else:
+        base = "https://clientbp.ggpolarbear.com"
+    return f"{base}/{endpoint}"
+
+def like_get_count(uid, server_name, token):
+    try:
+        edata = bytes.fromhex(uid_enc(uid))
+        headers = {
+            'User-Agent': "Dalvik/2.1.0 (Linux; U; Android 9; ASUS_Z01QD Build/PI)",
+            'Connection': "Keep-Alive",
+            'Accept-Encoding': "gzip",
+            'Authorization': f"Bearer {token}",
+            'Content-Type': "application/x-www-form-urlencoded",
+            'Expect': "100-continue",
+            'X-Unity-Version': "2018.4.11f1",
+            'X-GA': "v1 1",
+            'ReleaseVersion': "OB54"
+        }
+        url = like_get_url(server_name, "GetPlayerPersonalShow")
+        resp = requests.post(url, data=edata, headers=headers, verify=False)
+        decoded = like_decode_proto(resp.content)
+        if decoded is None:
+            return 0, "", 0
+        import json as _json
+        jsond = _json.loads(MessageToJson(decoded))
+        acc = jsond.get("AccountInfo", {})
+        return int(acc.get("Likes", 0)), acc.get("PlayerNickname", ""), int(acc.get("UID", 0))
+    except Exception as e:
+        print(f"like_get_count error: {e}")
+        return 0, "", 0
+
+async def like_send_one(session, edata, token, url):
+    headers = {
+        'User-Agent': "Dalvik/2.1.0 (Linux; U; Android 9; ASUS_Z01QD Build/PI)",
+        'Connection': "Keep-Alive",
+        'Accept-Encoding': "gzip",
+        'Authorization': f"Bearer {token}",
+        'Content-Type': "application/x-www-form-urlencoded",
+        'Expect': "100-continue",
+        'X-Unity-Version': "2018.4.11f1",
+        'X-GA': "v1 1",
+        'ReleaseVersion': "OB54"
+    }
+    try:
+        async with session.post(url, data=edata, headers=headers) as resp:
+            return resp.status
+    except:
+        return None
+
+async def like_send_all(uid, server_name, tokens):
+    proto = like_create_proto(uid, server_name)
+    encrypted = like_encrypt(proto)
+    edata = bytes.fromhex(encrypted)
+    url = like_get_url(server_name, "LikeProfile")
+    async with aiohttp.ClientSession() as session:
+        tasks = [
+            like_send_one(session, edata, tokens[i % len(tokens)]["token"], url)
+            for i in range(100)
+        ]
+        await asyncio.gather(*tasks, return_exceptions=True)
 # ── API helpers ──────────────────────────────────────────────────────────────
 
 def fetch_player_isbanner_data_by_uid_or_name(search_parameter):
@@ -817,6 +938,57 @@ async def emotelist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(text, parse_mode="Markdown")
 
+@require_join
+async def like(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if len(context.args) < 2:
+        await update.message.reply_text(
+            "❌ Usage: `/like <uid> <server>`\n\n"
+            "Servers: `IND` `BR` `US` `SAC` `NA` `BD`\n\n"
+            "Example: `/like 123456789 IND`",
+            parse_mode="Markdown"
+        )
+        return
+
+    uid = context.args[0].strip()
+    server = context.args[1].strip().upper()
+
+    if not uid.isdigit():
+        await update.message.reply_text("❌ UID sirf numbers mein hona chahiye.", parse_mode="Markdown")
+        return
+
+    msg = await update.message.reply_text("❤️ Like bhej raha hoon... (~10-15 sec lagenge)")
+
+    try:
+        tokens = like_load_tokens(server)
+        if not tokens:
+            await msg.edit_text("❌ Token file nahi mili.")
+            return
+
+        token = tokens[0]["token"]
+        before_likes, player_name, player_uid = like_get_count(uid, server, token)
+
+        await like_send_all(uid, server, tokens)
+
+        after_likes, player_name, player_uid = like_get_count(uid, server, token)
+        likes_given = after_likes - before_likes
+
+        status_text = "✅ Likes Successfully Sent!" if likes_given > 0 else "⚠️ Max likes already reached!"
+
+        text = (
+            f"❤️ *Like Result*\n\n"
+            f"👤 Name: `{player_name}`\n"
+            f"🆔 UID: `{player_uid}`\n"
+            f"🌍 Server: `{server}`\n\n"
+            f"📊 Likes Before: `{before_likes}`\n"
+            f"📈 Likes After: `{after_likes}`\n"
+            f"💝 Likes Given: `{likes_given}`\n\n"
+            f"{status_text}"
+        )
+        await msg.edit_text(text, parse_mode="Markdown")
+
+    except Exception as e:
+        await msg.edit_text(f"❌ Error: `{e}`", parse_mode="Markdown")
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -840,6 +1012,7 @@ def main():
     app.add_handler(CommandHandler("invite5", invite5))
     app.add_handler(CommandHandler("joinemote", joinemote))
     app.add_handler(CommandHandler("emotelist", emotelist))
+    app.add_handler(CommandHandler("like", like))
     print("Bot started...")
     app.run_polling(
         allowed_updates=Update.ALL_TYPES,
